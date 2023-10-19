@@ -1,5 +1,10 @@
 import logging
-from logging.handlers import StreamHandler
+from logging import StreamHandler
+from flask import Flask, jsonify, request, make_response
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from vpoker_analyzer import HandAnalyzer
+import re
 
 # Set up logging
 logger = logging.getLogger('vpoker_flask')
@@ -13,11 +18,6 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 stream_handler.setFormatter(formatter)
 
 logger.addHandler(stream_handler)
-
-from flask import Flask, jsonify, request
-from flask_limiter import Limiter
-from vpoker_analyzer import HandAnalyzer
-import re
 
 app = Flask(__name__)
 
@@ -43,14 +43,17 @@ def handle_exception(e):
 
 @limiter.request_filter
 def exempt_users():
-    return False  # No one is exempt from the rate limit
+    return False 
 
-@limiter.error_message
-def ratelimit_error():
-    return jsonify({"error": "ratelimit exceeded"}), 429
+@app.errorhandler(429)
+def ratelimit_error(e):
+    return make_response(jsonify(error="ratelimit exceeded"), 429)
 
 def is_valid_card_string(card_str):
     return bool(re.match('^[a-jc-t0-9]{10}$', card_str))
+
+def get_remote_address():
+    return request.remote_addr
 
 @app.route('/analyze-hand', methods=['POST'])
 @limiter.limit("1 per second")  # Apply rate limiting to this endpoint
@@ -74,6 +77,3 @@ def analyze_hand():
     result = analyzer.analyze(return_full_analysis=False, return_bestdisc_cnts=True)
     
     return jsonify(result)
-
-if __name__ == "__main__":
-    app.run()
