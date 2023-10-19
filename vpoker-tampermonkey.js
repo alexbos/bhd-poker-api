@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Extract Playing Cards with Help Button
+// @name         BHD Video Poker Help Button
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Extract playing cards from BeyondHD game page and send to Flask API
-// @author       You
+// @description  Button to help determine optimal holds
+// @author       bluetardis
 // @match        https://beyond-hd.me/games/play/*
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
@@ -35,7 +35,7 @@
     function sendHandToAPI(hand) {
         GM_xmlhttpRequest({
             method: "POST",
-            url: "http://127.0.0.1:8000/analyze-hand",
+            url: "http://vpoker.fwdbox.net:2095/analyze-hand",
             data: JSON.stringify({
                 hand: hand
             }),
@@ -43,10 +43,24 @@
                 "Content-Type": "application/json"
             },
             onload: function(response) {
-                let responseData = JSON.parse(response.responseText);
-                let holdKey = Object.keys(responseData)[0];
-                console.log("Extracted hold key from API response:", holdKey);  // Debugging
-                highlightHoldButtons(holdKey);
+                try {
+                    let responseData = JSON.parse(response.responseText);
+
+                    // Check for errors in the API response
+                    if (responseData.error) {
+                        console.error("API returned an error:", responseData.error);
+                        alert("API Error: " + responseData.error);  // Optionally show an alert to the user
+                        return;
+                    }
+
+                    // Extract the holdKey from the response data
+                    let holdKey = Object.keys(responseData)[0];
+                    console.log("Extracted hold key from API response:", holdKey);
+                    highlightHoldButtons(holdKey);
+
+                } catch (e) {
+                    console.error("Error parsing API response:", e);
+                }
             },
             onerror: function(err) {
                 console.error("Request failed", err);
