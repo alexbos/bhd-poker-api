@@ -1,20 +1,41 @@
 from flask import Flask, jsonify, request
+from flask_limiter import Limiter
 from vpoker_analyzer import HandAnalyzer
+import re
 
 app = Flask(__name__)
 
-# Import the HandAnalyzer class from the provided code
-# exec(vp_analyzer_code)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,  # Use the client's IP address as the key for rate limiting
+    default_limits=["1 per second"]  # Set the default rate limit
+)
+
+@limiter.request_filter
+def exempt_users():
+    return False  # No one is exempt from the rate limit
+
+@limiter.error_message
+def ratelimit_error():
+    return jsonify({"error": "ratelimit exceeded"}), 429
+
+def is_valid_card_string(card_str):
+    return bool(re.match('^[a-jc-t0-9]{10}$', card_str))
 
 @app.route('/analyze-hand', methods=['POST'])
+@limiter.limit("1 per second")  # Apply rate limiting to this endpoint
 def analyze_hand():
     data = request.json
     
     # Ensure the hand data is provided
     if not data or 'hand' not in data:
-        return jsonify({"error": "Poker hand not provided."}), 400
+        return jsonify({"error": "Hand not provided."}), 400
     
     hand = data['hand']
+    
+    # Validate the hand value based on the criteria
+    if not is_valid_card_string(hand):
+        return jsonify({"error": "Invalid card string."}), 400
     
     # Create an instance of HandAnalyzer
     analyzer = HandAnalyzer(hand)
@@ -24,9 +45,5 @@ def analyze_hand():
     
     return jsonify(result)
 
-
-# For demonstration purposes in this environment, we won't run the app
-# In a real environment, you would run the app using app.run()
-
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run()
