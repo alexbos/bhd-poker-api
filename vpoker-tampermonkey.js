@@ -35,7 +35,7 @@
     function sendHandToAPI(hand) {
         GM_xmlhttpRequest({
             method: "POST",
-            url: "http://vpoker.fwdbox.net:2095/analyze-hand",
+            url: "https://vpoker.fwdbox.net/analyze-hand",
             data: JSON.stringify({
                 hand: hand
             }),
@@ -49,7 +49,7 @@
                     // Check for errors in the API response
                     if (responseData.error) {
                         console.error("API returned an error:", responseData.error);
-                        alert("API Error: " + responseData.error);  // Optionally show an alert to the user
+                        alert("API Error: " + responseData.error); 
                         return;
                     }
 
@@ -72,9 +72,7 @@
         for (let i = 0; i < 5; i++) {
             let cardCode = holdKey.slice(i*2, i*2 + 2);
             let buttonDiv = document.getElementById(`button${i+1}`);
-            //console.log(`Evaluating button${i+1} with card code '${cardCode}'`);  // Debugging
             if (buttonDiv && cardCode !== 'XX') {
-                //console.log(`Highlighting button${i+1}`);  // Debugging
                 let spanElement = buttonDiv.querySelector('span');
                 if (spanElement) {
                     spanElement.style.backgroundColor = '#324472';
