@@ -55,6 +55,14 @@ def is_valid_card_string(card_str):
 def get_remote_address():
     return request.remote_addr
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return jsonify(error="404 Not Found: The requested URL was not found on the server."), 404
+
+@app.route('/', methods=['GET'])
+def root():
+    return '', 200
+
 @app.route('/analyze-hand', methods=['POST'])
 @limiter.limit("1 per second")  # Apply rate limiting to this endpoint
 def analyze_hand():
