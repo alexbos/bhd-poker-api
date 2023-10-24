@@ -56,7 +56,7 @@
                     // Extract the holdKey from the response data
                     let holdKey = Object.keys(responseData)[0];
                     console.log("Extracted hold key from API response:", holdKey);
-                    highlightHoldButtons(holdKey);
+                    highlightColumns(holdKey);
 
                 } catch (e) {
                     console.error("Error parsing API response:", e);
@@ -80,6 +80,17 @@
             }
         }
     }
+
+    function highlightColumns(holdKey) {
+        for (let i = 0; i < 5; i++) {
+            let cardCode = holdKey.slice(i*2, i*2 + 2);
+            let columnDiv = document.getElementById(`machine${i+1}`);
+            if (columnDiv && cardCode !== 'XX') {
+                columnDiv.style.backgroundColor = '#324472';
+            }
+        }
+    }
+    
 
     function activateScript() {
         let drawButtonTxt = document.getElementById("videopokerSpinTxt");
