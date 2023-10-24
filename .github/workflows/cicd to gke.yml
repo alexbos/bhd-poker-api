@@ -42,6 +42,7 @@ jobs:
       run: gcloud auth configure-docker
 
     - name: Build and Push Docker image
+      id: build_and_push_docker
       run: |
         TAG_NAME="v$(date +'%Y%m%d%H%M%S')"
         docker build -t gcr.io/$PROJECT_ID/$IMAGE_NAME:$TAG_NAME .
@@ -56,3 +57,5 @@ jobs:
     - name: Deploy to GKE
       run: |
         kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=gcr.io/$PROJECT_ID/$IMAGE_NAME:$TAG_NAME --namespace=$NAMESPACE_NAME
+      env:
+        TAG_NAME: ${{ steps.build_and_push_docker.outputs.tag_name }}
