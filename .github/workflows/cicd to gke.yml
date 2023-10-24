@@ -11,7 +11,7 @@ env:
   TAG_NAME: latest
   PROJECT_ID: bhd-vpoker
   DEPLOYMENT_NAME: bhd-vpoker
-  CONTAINER_NAME: bhd-poker-api
+  CONTAINER_NAME: bhd-poker-api-sha256-1
   NAMESPACE_NAME: default
 jobs:
   build-and-deploy:
