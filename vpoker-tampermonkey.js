@@ -35,7 +35,7 @@
     function sendHandToAPI(hand) {
         GM_xmlhttpRequest({
             method: "POST",
-            url: "https://vpoker.fwdbox.net/analyze-hand",
+            url: "https://7vzbfozlsh.execute-api.us-east-1.amazonaws.com/dev/analyze-hand",
             data: JSON.stringify({
                 hand: hand
             }),
